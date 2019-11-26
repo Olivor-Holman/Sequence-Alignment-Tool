@@ -1,0 +1,128 @@
+import numpy
+numpy.set_printoptions(threshold=numpy.inf, linewidth=10000)
+
+#codes for the function 'align(sequence1, sequence2)'
+
+#input your sequences to be aligned here
+forward_seq = ''
+reverse_seq = ''
+
+
+#raises value error if sequence contains non-canonical bases, so always catch 
+#erros when using 
+#adapt to work for lower or upper case - done
+def base_pair_find(base):
+    base = base.upper()
+    if base == 'A':
+        return 'T'
+    elif base == 'T':
+        return 'A'
+    elif base == 'C':
+        return 'G'
+    elif base == 'G':
+        return 'C'
+    else:
+        raise ValueError()
+
+def complement(sequence):
+    new = []
+    #sequence = sequence.lower()
+    for i in sequence:
+        try:
+            new.append(base_pair_find(i))
+        except:
+            raise ValueError("sequence error - invalid bases entered")
+    return "".join(new)
+
+def reverse_complement(sequence):
+    new = []
+    #sequence = sequence.lower()
+    for i in sequence:
+        try:
+            new = [base_pair_find(i)] + new
+        except:
+            raise ValueError("sequence error - invalid bases entered")
+    return "".join(new)
+
+
+def align(seq1, seq2):
+    seq1 = list(seq1)
+    seq2 = list(seq2)
+    highest = seq1
+    lowest = seq2
+    if len(seq2) > len(seq1): 
+        highest = seq2
+        lowest = seq1
+    
+    #use a list to store numbers of matched bases for each alignment.    
+    num_hits = []
+    
+    #iterate through all possible sequence alignments to find the one with
+    #the highest number of matched bases - which is most likely to be correct
+    #alignnment.    
+    for i in range(0, len(highest)):
+        count = 0
+        for q in range(0, len(lowest)):
+            try:
+                if lowest[q] == highest[i + q]:
+                    count += 1
+            except:
+                break
+        num_hits.append(count)
+        
+    #finds the highest value in the num_hits list and sets it as a starting
+    #point for alignment.
+    align_start = num_hits.index(max(num_hits))
+    
+    #fill list with empty space to display alignment properly
+    for i in range(0,align_start):
+        lowest = ["-"] + lowest
+    #create list displaying * for correctly matched bases and - for incorrect
+    #ones.     
+    space_list = []
+    for i in range(0, len(highest)):
+        try:
+            if highest[i] == lowest[i]:
+                space_list.append("*")
+            else:
+                space_list.append("-")
+        except:
+            break
+    #store numpy array for         
+    quack = numpy.array([highest, space_list, lowest])
+    
+    #calculate the percentage of matched bases.
+    match = 0
+    discrepancy = 0
+    
+    for i in range(0, len(space_list)):
+        if space_list[i] == '*':
+            match += 1
+        elif space_list[i] == '-':
+            discrepancy += 1
+    
+    percent_alignment = (match/discrepancy)*100
+    
+    #print(highest, "\n", space_list, "\n", lowest)
+    #print(quack)
+    '''
+    adding all sequences to a numpy array makes this code redundant
+    but leave in as with this the code works without numpy.
+    
+    output = open('test.txt', 'w')
+    output.write(str(highest))
+    output.write("\n")
+    output.write(str(space_list))
+    output.write("\n")
+    output.write(str(lowest))
+    output.close()
+    '''
+    #output the alignment and percentage of matched bases to a notepad 
+    #file.
+    output = open('test.txt', 'w')
+    output.write(str(quack))
+    output.write('\n percent sequence alignment = ')
+    output.write(str(percent_alignment))
+    output.close()
+    
+
